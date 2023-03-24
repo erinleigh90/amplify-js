@@ -8,6 +8,10 @@
 	"publishConfig": {
 		"access": "public"
 	},
+	"exports": {
+    ".": "./lib/index.js",
+    "./Platform": "./lib/Platform/index.js"
+	},
 	"sideEffects": [
 		"./lib/I18n/index.js",
 		"./lib/Credentials.js",

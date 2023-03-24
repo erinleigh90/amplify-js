@@ -6,6 +6,8 @@ import { detectFramework } from './detectFramework';
 
 const BASE_USER_AGENT = `aws-amplify/${version}`;
 
+export * from './types';
+
 export const Platform = {
 	userAgent: BASE_USER_AGENT,
 	product: '',
