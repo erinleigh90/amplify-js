@@ -308,9 +308,9 @@ export class AuthClass extends InternalAuthClass {
 	 * Get authenticated credentials of current user.
 	 * @return - A promise resolves to be current user's credentials
 	 */
-	public async currentUserCredentials(): Promise<ICredentials> {
-		return super.currentUserCredentials();
-	}
+	// public async currentUserCredentials(): Promise<ICredentials> {
+	// 	return super.currentUserCredentials();
+	// }
 
 	public currentCredentials(): Promise<ICredentials> {
 		return super.currentCredentials();

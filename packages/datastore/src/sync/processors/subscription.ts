@@ -90,7 +90,9 @@ class SubscriptionProcessor {
 			InternalAPI,
 			Cache,
 		}
-	) {}
+	) {
+		console.log('SUBSCRIPTION amplifyConfig', amplifyConfig);
+	}
 
 	private buildSubscription(
 		namespace: SchemaNamespace,
@@ -348,17 +350,20 @@ class SubscriptionProcessor {
 						);
 					}
 				} catch (err) {
-					logger.debug('error getting OIDC JWT', err);
+					console.log('SUBSCRIPTION', 'error getting OIDC JWT', err);
 					// best effort to get oidc jwt
 				}
 
+				console.log('SUB outside namespaces', this.schema);
 				Object.values(this.schema.namespaces).forEach(namespace => {
+					console.log('SUB inside schema', namespace.models);
 					Object.values(namespace.models)
 						.filter(({ syncable }) => syncable)
 						.forEach(
 							modelDefinition =>
 								this.runningProcesses.isOpen &&
 								this.runningProcesses.add(async () => {
+									//console.log('SUB inside running process', modelDefinition);
 									const modelAuthModes = await getModelAuthModes({
 										authModeStrategy: this.authModeStrategy,
 										defaultAuthMode:
@@ -452,11 +457,12 @@ class SubscriptionProcessor {
 											variables[ownerField!] = ownerValue;
 										}
 
-										logger.debug(
-											`Attempting ${operation} subscription with authMode: ${
-												readAuthModes[operationAuthModeAttempts[operation]]
-											}`
-										);
+										// console.log(
+										// 	'SUBSCRIPTION',
+										// 	`Attempting ${operation} subscription with authMode: ${
+										// 		readAuthModes[operationAuthModeAttempts[operation]]
+										// 	}`
+										// );
 
 										const queryObservable = <
 											Observable<{
@@ -588,7 +594,8 @@ class SubscriptionProcessor {
 																readAuthModes.length
 															) {
 																// last auth mode retry. Continue with error
-																logger.debug(
+																console.log(
+																	'SUBSCRIPTION',
 																	`${operation} subscription failed with authMode: ${
 																		readAuthModes[
 																			operationAuthModeAttempts[operation] - 1
@@ -598,7 +605,8 @@ class SubscriptionProcessor {
 															} else {
 																// retry with different auth mode. Do not trigger
 																// observer error or error handler
-																logger.debug(
+																console.log(
+																	'SUBSCRIPTION',
 																	`${operation} subscription failed with authMode: ${
 																		readAuthModes[
 																			operationAuthModeAttempts[operation] - 1

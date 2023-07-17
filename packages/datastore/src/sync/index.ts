@@ -157,6 +157,7 @@ export class SyncEngine {
 		private readonly amplifyContext: AmplifyContext,
 		private readonly connectivityMonitor?: DataStoreConnectivity
 	) {
+		console.log('SYNCENGINE amplifyConfig', amplifyConfig);
 		this.runningProcesses = new BackgroundProcessManager();
 		this.waitForSleepState = new Promise(resolve => {
 			this.syncQueriesObservableStartSleeping = resolve;

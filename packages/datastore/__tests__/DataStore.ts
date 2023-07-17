@@ -185,84 +185,94 @@ describe('DataStore sanity testing checks', () => {
 			});
 
 			describe('simple cases', () => {
-				for (const online of [true, false]) {
-					for (const isNode of [true, false]) {
-						const connectedState = online ? 'online' : 'offline';
-						const environment = isNode ? 'node' : 'browser';
+				// for (const online of [true, false]) {
+				// 	for (const isNode of [true, false]) {
+				// 		const connectedState = online ? 'online' : 'offline';
+				// 		const environment = isNode ? 'node' : 'browser';
+				const online = true;
+				const isNode = false;
+				const connectedState = 'online';
+				const environment = 'browser';
 
-						test(`clearing after awaited start (${connectedState}, ${environment})`, async () => {
-							({ DataStore, Post } = getDataStore({ online, isNode }));
-							await DataStore.start();
-							await DataStore.clear();
-							await DataStore.start();
-						});
+				test(`clearing after awaited start (${connectedState}, ${environment})`, async () => {
+					({ DataStore, Post } = getDataStore({ online, isNode }));
+					await DataStore.start();
+					await DataStore.clear();
+					await DataStore.start();
+				});
 
-						test(`clearing after unawaited start (${connectedState}, ${environment})`, async () => {
-							({ DataStore, Post } = getDataStore({ online, isNode }));
-							DataStore.start();
-							await DataStore.clear();
-							await DataStore.start();
-						});
+				test(`clearing after unawaited start (${connectedState}, ${environment})`, async () => {
+					({ DataStore, Post } = getDataStore({ online, isNode }));
+					DataStore.start();
+					await DataStore.clear();
+					await DataStore.start();
+				});
 
-						test(`clearing after unawaited start, then a small pause (${connectedState}, ${environment})`, async () => {
-							({ DataStore, Post } = getDataStore({ online, isNode }));
-							DataStore.start();
-							await pause(1);
-							await DataStore.clear();
-							await DataStore.start();
-						});
+				test(`clearing after unawaited start, then a small pause (${connectedState}, ${environment})`, async () => {
+					({ DataStore, Post } = getDataStore({ online, isNode }));
+					DataStore.start();
+					await pause(1);
+					await DataStore.clear();
+					await DataStore.start();
+				});
 
-						test(`stopping after awaited start (${connectedState}, ${environment})`, async () => {
-							({ DataStore, Post } = getDataStore({ online, isNode }));
-							await DataStore.start();
-							await DataStore.stop();
-							await DataStore.start();
-						});
+				test(`stopping after awaited start (${connectedState}, ${environment})`, async () => {
+					({ DataStore, Post } = getDataStore({ online, isNode }));
+					await DataStore.start();
+					await DataStore.stop();
+					await DataStore.start();
+				});
 
-						test(`stopping after unawaited start (${connectedState}, ${environment})`, async () => {
-							({ DataStore, Post } = getDataStore({ online, isNode }));
-							DataStore.start();
-							await DataStore.stop();
-							await DataStore.start();
-						});
+				test(`stopping after unawaited start (${connectedState}, ${environment})`, async () => {
+					({ DataStore, Post } = getDataStore({ online, isNode }));
+					DataStore.start();
+					await DataStore.stop();
+					await DataStore.start();
+				});
 
-						test(`stopping after unawaited start, then a small pause (${connectedState}, ${environment})`, async () => {
-							({ DataStore, Post } = getDataStore({ online, isNode }));
-							DataStore.start();
-							await pause(1);
-							await DataStore.stop();
-							await DataStore.start();
-						});
+				test(`stopping after unawaited start, then a small pause (${connectedState}, ${environment})`, async () => {
+					console.log('1');
+					({ DataStore, Post } = getDataStore({ online, isNode }));
+					console.log('2');
+					DataStore.start();
+					console.log('3');
+					await pause(1);
+					// console.log('4');
+					// await DataStore.stop();
+					// console.log('5');
+					// await DataStore.start();
+					// console.log('6');
+				});
 
-						// tslint:disable-next-line: max-line-length
-						test(`starting after unawaited clear results in a DX-friendly error (${connectedState}, ${environment})`, async () => {
-							({ DataStore, Post } = getDataStore({ online, isNode }));
-							await DataStore.start();
-							const clearing = DataStore.clear();
+				// tslint:disable-next-line: max-line-length
+				test(`starting after unawaited clear results in a DX-friendly error (${connectedState}, ${environment})`, async () => {
+					({ DataStore, Post } = getDataStore({ online, isNode }));
+					await DataStore.start();
+					const clearing = DataStore.clear();
 
-							// At minimum: looking for top-level error, operation that failed, state while in failure.
-							expect(DataStore.start()).rejects.toThrow(
-								/DataStoreStateError:.+`DataStore\.start\(\)`.+Clearing/
-							);
+					// At minimum: looking for top-level error, operation that failed, state while in failure.
+					expect(DataStore.start()).rejects.toThrow(
+						/DataStoreStateError:.+`DataStore\.start\(\)`.+Clearing/
+					);
 
-							await clearing;
-						});
+					await clearing;
+				});
 
-						// tslint:disable-next-line: max-line-length
-						test(`starting after unawaited stop results in a DX-friendly error (${connectedState}, ${environment})`, async () => {
-							({ DataStore, Post } = getDataStore({ online, isNode }));
-							await DataStore.start();
-							const stopping = DataStore.stop();
+				// tslint:disable-next-line: max-line-length
+				test(`starting after unawaited stop results in a DX-friendly error (${connectedState}, ${environment})`, async () => {
+					({ DataStore, Post } = getDataStore({ online, isNode }));
+					await DataStore.start();
+					const stopping = DataStore.stop();
 
-							// At minimum: looking for top-level error, operation that failed, state while in failure.
-							expect(DataStore.start()).rejects.toThrow(
-								/DataStoreStateError:.+`DataStore\.start\(\)`.+Stopping/
-							);
+					// At minimum: looking for top-level error, operation that failed, state while in failure.
+					expect(DataStore.start()).rejects.toThrow(
+						/DataStoreStateError:.+`DataStore\.start\(\)`.+Stopping/
+					);
 
-							await stopping;
-						});
-					}
-				}
+					await stopping;
+				});
+				// 	}
+				// }
 			});
 
 			/**

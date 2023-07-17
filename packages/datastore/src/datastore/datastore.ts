@@ -1479,7 +1479,9 @@ class DataStore {
 		 *
 		 * @param err An error to test.
 		 */
+		console.log('DATASTORE handleAddProcError', operation);
 		const handler = (err: Error) => {
+			console.log('DATASTORE handler', err.message);
 			if (err.message.startsWith('BackgroundManagerNotOpenError')) {
 				throw new Error(
 					[
@@ -1505,11 +1507,12 @@ class DataStore {
 	 * attaches a sync engine, starts it, and subscribes.
 	 */
 	start = async (): Promise<void> => {
+		console.log('DATASTORE 1', this.runningProcesses);
 		return this.runningProcesses
 			.add(async () => {
 				this.state = DataStoreState.Starting;
 				if (this.initialized === undefined) {
-					logger.debug('Starting DataStore');
+					console.log('DATASTORE', 'Starting DataStore');
 					this.initialized = new Promise((res, rej) => {
 						this.initResolve = res;
 						this.initReject = rej;
@@ -1534,7 +1537,8 @@ class DataStore {
 				const { aws_appsync_graphqlEndpoint } = this.amplifyConfig;
 
 				if (aws_appsync_graphqlEndpoint) {
-					logger.debug(
+					console.log(
+						'DATASTORE',
 						'GraphQL endpoint available',
 						aws_appsync_graphqlEndpoint
 					);
@@ -1559,6 +1563,8 @@ class DataStore {
 
 					const fullSyncIntervalInMilliseconds =
 						this.fullSyncInterval * 1000 * 60; // fullSyncInterval from param is in minutes
+
+					console.log('sync start subscription');
 					syncSubscription = this.sync
 						.start({ fullSyncInterval: fullSyncIntervalInMilliseconds })
 						.subscribe({
@@ -1570,6 +1576,7 @@ class DataStore {
 									: ControlMessage.SYNC_ENGINE_STORAGE_SUBSCRIBED;
 
 								if (type === readyType) {
+									console.log('init resolve');
 									this.initResolve();
 								}
 
@@ -1594,6 +1601,7 @@ class DataStore {
 					this.initResolve();
 				}
 
+				console.log('awaiting initialization', this.initialized);
 				await this.initialized;
 				this.state = DataStoreState.Running;
 			}, 'datastore start')
