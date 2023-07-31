@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Auth } from './Auth';
+import { InternalAuth } from './internals';
 import {
 	CognitoHostedUIIdentityProvider,
 	SignUpParams,
@@ -23,6 +24,7 @@ export {
 	CognitoUser,
 	CookieStorage,
 	CognitoHostedUIIdentityProvider,
+	InternalAuth,
 	SignUpParams,
 	appendToCognitoUserAgent,
 	AuthErrorStrings,
