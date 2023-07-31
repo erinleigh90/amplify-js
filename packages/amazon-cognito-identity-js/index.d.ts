@@ -1,4 +1,6 @@
 import { InternalCognitoUser } from './internals';
+export { InternalCognitoUser };
+
 declare module 'amazon-cognito-identity-js' {
 	//import * as AWS from "aws-sdk";
 
