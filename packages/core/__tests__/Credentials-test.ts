@@ -6,6 +6,7 @@ import {
 } from '../src/AwsClients/CognitoIdentity';
 import { Hub } from '../src/Hub';
 import { CustomUserAgentDetails } from '../src/Platform/types';
+import { getAmplifyUserAgent } from '../src/Platform';
 
 jest.mock('../src/AwsClients/CognitoIdentity');
 
@@ -141,14 +142,20 @@ describe('Credentials test', () => {
 				region,
 			});
 
-			await credentials._setCredentialsFromFederation({
-				provider: 'google',
-				token: 'token',
-				identity_id: '123',
-			});
+			await credentials._setCredentialsFromFederation(
+				{
+					provider: 'google',
+					token: 'token',
+					identity_id: '123',
+				},
+				userAgentDetails
+			);
 
 			expect(getCredentialsForIdentity).toHaveBeenCalledWith(
-				expect.objectContaining({ region: identityPoolRegion }),
+				expect.objectContaining({
+					region: identityPoolRegion,
+					userAgentValue: getAmplifyUserAgent(userAgentDetails),
+				}),
 				expect.objectContaining({
 					IdentityId: '123',
 					Logins: {
@@ -180,10 +187,13 @@ describe('Credentials test', () => {
 				},
 			};
 
-			await credentials._setCredentialsFromSession(session);
+			await credentials._setCredentialsFromSession(session, userAgentDetails);
 
 			expect(getId).toBeCalledWith(
-				expect.objectContaining({ region: identityPoolRegion }),
+				expect.objectContaining({
+					region: identityPoolRegion,
+					userAgentValue: getAmplifyUserAgent(userAgentDetails),
+				}),
 				{
 					IdentityPoolId: identityPoolId,
 					Logins: {
@@ -205,10 +215,13 @@ describe('Credentials test', () => {
 				region,
 			});
 
-			await credentials._setCredentialsForGuest();
+			await credentials._setCredentialsForGuest(userAgentDetails);
 
 			expect(getId).toBeCalledWith(
-				expect.objectContaining({ region: identityPoolRegion }),
+				expect.objectContaining({
+					region: identityPoolRegion,
+					userAgentValue: getAmplifyUserAgent(userAgentDetails),
+				}),
 				{
 					IdentityPoolId: identityPoolId,
 				}

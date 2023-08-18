@@ -11,6 +11,7 @@ import { getId, getCredentialsForIdentity } from './AwsClients/CognitoIdentity';
 import { parseAWSExports } from './parseAWSExports';
 import { Hub } from './Hub';
 import { CustomUserAgentDetails } from './Platform/types';
+import { getAmplifyUserAgent } from './Platform';
 
 const logger = new Logger('Credentials');
 
@@ -255,7 +256,9 @@ export class CredentialsClass {
 		return this._nextCredentialsRefresh <= Date.now();
 	}
 
-	private async _setCredentialsForGuest() {
+	private async _setCredentialsForGuest(
+		customUserAgentDetails?: CustomUserAgentDetails
+	) {
 		logger.debug('setting credentials for guest');
 		if (!this._config?.identityPoolId) {
 			// If Credentials are not configured thru Auth module,
@@ -293,7 +296,10 @@ export class CredentialsClass {
 
 		const identityId = (this._identityId = await this._getGuestIdentityId());
 
-		const cognitoConfig = { region: identityPoolRegion ?? region };
+		const cognitoConfig = {
+			region: identityPoolRegion ?? region,
+			userAgentValue: getAmplifyUserAgent(customUserAgentDetails),
+		};
 
 		const guestCredentialsProvider = async () => {
 			if (!identityId) {
@@ -363,7 +369,10 @@ export class CredentialsClass {
 			});
 	}
 
-	private _setCredentialsFromFederation(params) {
+	private _setCredentialsFromFederation(
+		params,
+		customUserAgentDetails?: CustomUserAgentDetails
+	) {
 		const { provider, token } = params;
 		let { identity_id } = params;
 		const domains = {
@@ -394,7 +403,10 @@ export class CredentialsClass {
 			);
 		}
 
-		const cognitoConfig = { region: identityPoolRegion ?? region };
+		const cognitoConfig = {
+			region: identityPoolRegion ?? region,
+			userAgentValue: getAmplifyUserAgent(customUserAgentDetails),
+		};
 
 		const authenticatedCredentialsProvider = async () => {
 			if (!identity_id) {
@@ -424,7 +436,10 @@ export class CredentialsClass {
 		return this._loadCredentials(credentials, 'federated', true, params);
 	}
 
-	private _setCredentialsFromSession(session): Promise<ICredentials> {
+	private _setCredentialsFromSession(
+		session,
+		customUserAgentDetails?: CustomUserAgentDetails
+	): Promise<ICredentials> {
 		logger.debug('set credentials from session');
 		const idToken = session.getIdToken().getJwtToken();
 		const { region, userPoolId, identityPoolId, identityPoolRegion } =
@@ -443,7 +458,10 @@ export class CredentialsClass {
 		const logins = {};
 		logins[key] = idToken;
 
-		const cognitoConfig = { region: identityPoolRegion ?? region };
+		const cognitoConfig = {
+			region: identityPoolRegion ?? region,
+			userAgentValue: getAmplifyUserAgent(customUserAgentDetails),
+		};
 
 		/* 
 			Retreiving identityId with GetIdCommand to mimic the behavior in the following code in aws-sdk-v3:
@@ -566,13 +584,17 @@ export class CredentialsClass {
 		});
 	}
 
-	public set(params, source): Promise<ICredentials> {
+	public set(
+		params,
+		source,
+		customUserAgentDetails?: CustomUserAgentDetails
+	): Promise<ICredentials> {
 		if (source === 'session') {
-			return this._setCredentialsFromSession(params);
+			return this._setCredentialsFromSession(params, customUserAgentDetails);
 		} else if (source === 'federation') {
-			return this._setCredentialsFromFederation(params);
+			return this._setCredentialsFromFederation(params, customUserAgentDetails);
 		} else if (source === 'guest') {
-			return this._setCredentialsForGuest();
+			return this._setCredentialsForGuest(customUserAgentDetails);
 		} else {
 			logger.debug('no source specified for setting credentials');
 			return Promise.reject('invalid source');
