@@ -165,7 +165,10 @@ export class CredentialsClass {
 		return InternalAuth.currentUserCredentials(customUserAgentDetails);
 	}
 
-	public refreshFederatedToken(federatedInfo) {
+	public refreshFederatedToken(
+		federatedInfo,
+		customUserAgentDetails?: CustomUserAgentDetails
+	) {
 		logger.debug('Getting federated credentials');
 		const { provider, user, token, identity_id } = federatedInfo;
 		let { expires_at } = federatedInfo;
@@ -181,13 +184,16 @@ export class CredentialsClass {
 		if (expires_at > new Date().getTime()) {
 			// if not expired
 			logger.debug('token not expired');
-			return this._setCredentialsFromFederation({
-				provider,
-				token,
-				user,
-				identity_id,
-				expires_at,
-			});
+			return this._setCredentialsFromFederation(
+				{
+					provider,
+					token,
+					user,
+					identity_id,
+					expires_at,
+				},
+				customUserAgentDetails
+			);
 		} else {
 			// if refresh handler exists
 			if (
