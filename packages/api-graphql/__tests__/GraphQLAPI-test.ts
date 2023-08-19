@@ -578,19 +578,21 @@ describe('API test', () => {
 		});
 
 		test('multi-auth default case api-key, using AWS_IAM as auth mode', async () => {
-			expect.assertions(1);
-			jest.spyOn(Credentials, 'get').mockReturnValue(Promise.resolve('cred'));
+			expect.assertions(2);
+			const spyonAuth = jest
+				.spyOn(Credentials, 'get')
+				.mockReturnValue(Promise.resolve('cred'));
 
 			const spyon = jest
 				.spyOn(RestClient.prototype, 'post')
 				.mockReturnValue(Promise.resolve({}));
 
-			const api = new API(config);
+			const internalApi = new InternalAPI(config);
 			const url = 'https://appsync.amazonaws.com',
 				region = 'us-east-2',
 				variables = { id: '809392da-ec91-4ef0-b219-5238a8f942b2' },
 				apiKey = 'secret-api-key';
-			api.configure({
+			internalApi.configure({
 				aws_appsync_graphqlEndpoint: url,
 				aws_appsync_region: region,
 				aws_appsync_authenticationType: 'API_KEY',
@@ -598,7 +600,7 @@ describe('API test', () => {
 			});
 
 			const headers = {
-				'x-amz-user-agent': expectedUserAgentFrameworkOnly,
+				'x-amz-user-agent': expectedUserAgentAPI,
 			};
 
 			const body = {
@@ -616,13 +618,18 @@ describe('API test', () => {
 				cancellableToken: mockCancellableToken,
 			};
 
-			await api.graphql({
-				query: GetEvent,
-				variables,
-				authMode: GRAPHQL_AUTH_MODE.AWS_IAM,
-			});
+			await internalApi.graphql(
+				{
+					query: GetEvent,
+					variables,
+					authMode: GRAPHQL_AUTH_MODE.AWS_IAM,
+				},
+				undefined,
+				customUserAgentDetailsAPI
+			);
 
 			expect(spyon).toBeCalledWith(url, init);
+			expect(spyonAuth).toBeCalledWith(customUserAgentDetailsAPI);
 		});
 
 		test('multi-auth default case api-key, using AWS_LAMBDA as auth mode', async () => {

@@ -139,7 +139,9 @@ export class InternalGraphQLAPIClass {
 				};
 				break;
 			case 'AWS_IAM':
-				const credentialsOK = await this._ensureCredentials();
+				const credentialsOK = await this._ensureCredentials(
+					customUserAgentDetails
+				);
 				if (!credentialsOK) {
 					throw new Error(GraphQLAuthError.NO_CREDENTIALS);
 				}
@@ -443,8 +445,8 @@ export class InternalGraphQLAPIClass {
 	/**
 	 * @private
 	 */
-	_ensureCredentials() {
-		return this.Credentials.get()
+	_ensureCredentials(customUserAgentDetails?: CustomUserAgentDetails) {
+		return this.Credentials.get(customUserAgentDetails)
 			.then(credentials => {
 				if (!credentials) return false;
 				const cred = this.Credentials.shear(credentials);
