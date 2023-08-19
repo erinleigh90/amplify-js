@@ -6,6 +6,8 @@ import {
 	Credentials,
 	DateUtils,
 	Signer,
+	Category,
+	ApiAction,
 } from '@aws-amplify/core';
 
 import { apiOptions, ApiInfo } from './types';
@@ -173,7 +175,7 @@ export class RestClient {
 
 		let credentials;
 		try {
-			credentials = await this.Credentials.get();
+			credentials = await this.Credentials.get(init.customUserAgentDetails);
 		} catch (error) {
 			logger.debug('No credentials available, the request will be unsigned');
 			return this._request(params, isAllResponse);

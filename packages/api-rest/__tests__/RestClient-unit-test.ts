@@ -1,4 +1,4 @@
-import { Signer } from '@aws-amplify/core';
+import { ApiAction, Category, Credentials, Signer } from '@aws-amplify/core';
 
 jest
 	.spyOn(Signer, 'sign')
@@ -69,6 +69,8 @@ describe('RestClient test', () => {
 
 	describe('ajax', () => {
 		test('fetch with signed request', async () => {
+			const credentialsSpy = jest.spyOn(Credentials, 'get');
+
 			const apiOptions = {
 				headers: {},
 				endpoints: {},
@@ -80,8 +82,16 @@ describe('RestClient test', () => {
 			};
 
 			const restClient = new RestClient(apiOptions);
+			const customUserAgentDetails = {
+				category: Category.API,
+				action: ApiAction.Get,
+			};
 
-			expect(await restClient.ajax('url', 'method', {})).toEqual('data');
+			expect(
+				await restClient.ajax('url', 'method', { customUserAgentDetails })
+			).toEqual('data');
+
+			expect(credentialsSpy).toBeCalledWith(customUserAgentDetails);
 		});
 
 		test('fetch with signed failing request', async () => {
