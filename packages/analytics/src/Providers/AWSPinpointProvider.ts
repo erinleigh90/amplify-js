@@ -11,6 +11,7 @@ import {
 	transferKeyToLowerCase,
 	transferKeyToUpperCase,
 	AnalyticsAction,
+	CustomUserAgentDetails,
 } from '@aws-amplify/core';
 import {
 	putEvents,
@@ -30,7 +31,10 @@ import {
 	EndpointFailureData,
 } from '../types';
 import { v1 as uuid } from 'uuid';
-import { getAnalyticsUserAgentString } from '../utils/UserAgent';
+import {
+	getAnalyticsUserAgentDetails,
+	getAnalyticsUserAgentString,
+} from '../utils/UserAgent';
 import EventBuffer from './EventBuffer';
 
 const AMPLIFY_SYMBOL = (
@@ -143,7 +147,14 @@ export class AWSPinpointProvider implements AnalyticsProvider {
 	 */
 	public async record(params: EventParams, handlers: PromiseHandlers) {
 		logger.debug('_public record', params);
-		const credentials = await this._getCredentials();
+
+		const action =
+			params.event?.name === UPDATE_ENDPOINT
+				? AnalyticsAction.UpdateEndpoint
+				: AnalyticsAction.Record;
+		const credentials = await this._getCredentials(
+			getAnalyticsUserAgentDetails(action)
+		);
 		if (!credentials || !this._config.appId || !this._config.region) {
 			logger.debug(
 				'cannot send events without credentials, applicationId or region'
@@ -670,9 +681,11 @@ export class AWSPinpointProvider implements AnalyticsProvider {
 		);
 	}
 
-	private async _getCredentials() {
+	private async _getCredentials(
+		customUserAgentDetails: CustomUserAgentDetails
+	) {
 		try {
-			const credentials = await Credentials.get();
+			const credentials = await Credentials.get(customUserAgentDetails);
 			if (!credentials) return null;
 
 			logger.debug('set credentials for analytics', credentials);

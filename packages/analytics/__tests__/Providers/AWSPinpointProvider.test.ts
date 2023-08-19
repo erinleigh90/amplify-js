@@ -1,9 +1,10 @@
-import { Credentials, ClientDevice } from '@aws-amplify/core';
+import { Credentials, ClientDevice, AnalyticsAction } from '@aws-amplify/core';
 import {
 	putEvents,
 	updateEndpoint,
 } from '@aws-amplify/core/internals/aws-clients/pinpoint';
 import { AWSPinpointProvider as AnalyticsProvider } from '../../src/Providers/AWSPinpointProvider';
+import { getAnalyticsUserAgentDetails } from '../../src/utils/UserAgent';
 
 const endpointConfigure = {
 	address: 'configured', // The unique identifier for the recipient. For example, an address could be a device token, email address, or mobile phone number.
@@ -286,9 +287,11 @@ describe('AnalyticsProvider test', () => {
 				const analytics = new AnalyticsProvider();
 				analytics.configure(options);
 
-				jest.spyOn(Credentials, 'get').mockImplementationOnce(() => {
-					return Promise.resolve(credentials);
-				});
+				const spyon = jest
+					.spyOn(Credentials, 'get')
+					.mockImplementationOnce(() => {
+						return Promise.resolve(credentials);
+					});
 				const params = { event: { name: 'custom event', immediate: true } };
 				await analytics.record(params, { resolve, reject });
 				expect(mockPutEvents).toBeCalledWith(
@@ -319,6 +322,10 @@ describe('AnalyticsProvider test', () => {
 							},
 						},
 					}
+				);
+
+				expect(spyon).toBeCalledWith(
+					getAnalyticsUserAgentDetails(AnalyticsAction.Record)
 				);
 				expect(resolve).toBeCalled();
 			});
@@ -473,9 +480,11 @@ describe('AnalyticsProvider test', () => {
 				const analytics = new AnalyticsProvider();
 				analytics.configure(options);
 
-				jest.spyOn(Credentials, 'get').mockImplementationOnce(() => {
-					return Promise.resolve(credentials);
-				});
+				const spyon = jest
+					.spyOn(Credentials, 'get')
+					.mockImplementationOnce(() => {
+						return Promise.resolve(credentials);
+					});
 
 				const params = { event: { name: '_update_endpoint', immediate: true } };
 				await analytics.record(params, { resolve, reject });
@@ -510,6 +519,9 @@ describe('AnalyticsProvider test', () => {
 							},
 						},
 					}
+				);
+				expect(spyon).toBeCalledWith(
+					getAnalyticsUserAgentDetails(AnalyticsAction.UpdateEndpoint)
 				);
 				expect(resolve).toBeCalled();
 			});
