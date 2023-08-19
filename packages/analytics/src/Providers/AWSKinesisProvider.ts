@@ -9,7 +9,10 @@ import {
 import { KinesisClient, PutRecordsCommand } from '@aws-sdk/client-kinesis';
 import { AnalyticsProvider } from '../types';
 import { fromUtf8 } from '@aws-sdk/util-utf8-browser';
-import { getAnalyticsUserAgent } from '../utils/UserAgent';
+import {
+	getAnalyticsUserAgent,
+	getAnalyticsUserAgentDetails,
+} from '../utils/UserAgent';
 
 const logger = new Logger('AWSKinesisProvider');
 
@@ -236,7 +239,7 @@ export class AWSKinesisProvider implements AnalyticsProvider {
 	 * check if current credentials exists
 	 */
 	private _getCredentials() {
-		return Credentials.get()
+		return Credentials.get(getAnalyticsUserAgentDetails(AnalyticsAction.Record))
 			.then(credentials => {
 				if (!credentials) return null;
 				logger.debug('set credentials for analytics', this._config.credentials);

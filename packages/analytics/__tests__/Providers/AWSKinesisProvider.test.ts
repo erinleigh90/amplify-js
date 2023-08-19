@@ -1,6 +1,7 @@
-import { Credentials } from '@aws-amplify/core';
+import { AnalyticsAction, Credentials } from '@aws-amplify/core';
 import { AWSKinesisProvider as KinesisProvider } from '../../src/Providers/AWSKinesisProvider';
 import { KinesisClient, PutRecordsCommand } from '@aws-sdk/client-kinesis';
+import { getAnalyticsUserAgentDetails } from '../../src/utils/UserAgent';
 
 jest.useFakeTimers();
 
@@ -77,9 +78,11 @@ describe('kinesis provider test', () => {
 				'constructor'
 			);
 
-			jest.spyOn(Credentials, 'get').mockImplementationOnce(() => {
-				return Promise.resolve(credentials);
-			});
+			const credentialsSpy = jest
+				.spyOn(Credentials, 'get')
+				.mockImplementationOnce(() => {
+					return Promise.resolve(credentials);
+				});
 
 			await expect(
 				kinesisProvider.record({
@@ -107,6 +110,9 @@ describe('kinesis provider test', () => {
 			});
 
 			expect(KinesisClient.prototype.send).toHaveBeenCalledTimes(1);
+			expect(credentialsSpy).toBeCalledWith(
+				getAnalyticsUserAgentDetails(AnalyticsAction.Record)
+			);
 		});
 
 		test('record happy case', async () => {
