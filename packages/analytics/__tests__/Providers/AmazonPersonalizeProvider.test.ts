@@ -1,11 +1,12 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
-import { Credentials } from '@aws-amplify/core';
+import { AnalyticsAction, Credentials } from '@aws-amplify/core';
 import { AmazonPersonalizeProvider } from '../../src/Providers/AmazonPersonalizeProvider';
 import {
 	PersonalizeEventsClient,
 	PutEventsCommand,
 } from '@aws-sdk/client-personalize-events';
+import { getAnalyticsUserAgentDetails } from '../../src/utils/UserAgent';
 
 const credentials = {
 	accessKeyId: 'accessKeyId',
@@ -86,6 +87,9 @@ describe('Personalize provider test', () => {
 				},
 				config: {},
 			});
+			expect(spyon).toBeCalledWith(
+				getAnalyticsUserAgentDetails(AnalyticsAction.Record)
+			);
 
 			jest.advanceTimersByTime(6000);
 

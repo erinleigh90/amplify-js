@@ -23,7 +23,10 @@ import get from 'lodash/get';
 import isEmpty from 'lodash/isEmpty';
 import isEqual from 'lodash/isEqual';
 import { AnalyticsProvider } from '../types';
-import { getAnalyticsUserAgent } from '../utils/UserAgent';
+import {
+	getAnalyticsUserAgent,
+	getAnalyticsUserAgentDetails,
+} from '../utils/UserAgent';
 
 const logger = new Logger('AmazonPersonalizeProvider');
 
@@ -384,7 +387,7 @@ export class AmazonPersonalizeProvider implements AnalyticsProvider {
 	 */
 	private _getCredentials() {
 		const that = this;
-		return Credentials.get()
+		return Credentials.get(getAnalyticsUserAgentDetails(AnalyticsAction.Record))
 			.then(credentials => {
 				if (!credentials) return null;
 				logger.debug('set credentials for analytics', that._config.credentials);
