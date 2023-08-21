@@ -748,7 +748,11 @@ export class InternalAuthClass {
 				delete user['challengeParam'];
 				try {
 					await this.Credentials.clear();
-					const cred = await this.Credentials.set(session, 'session');
+					const cred = await this.Credentials.set(
+						session,
+						'session',
+						customUserAgentDetails
+					);
 					logger.debug('succeed to get cognito credentials', cred);
 				} catch (e) {
 					logger.debug('cannot get cognito credentials', e);
@@ -1347,7 +1351,11 @@ export class InternalAuthClass {
 						logger.debug(session);
 						try {
 							await this.Credentials.clear();
-							const cred = await this.Credentials.set(session, 'session');
+							const cred = await this.Credentials.set(
+								session,
+								'session',
+								customUserAgentDetails
+							);
 							logger.debug('succeed to get cognito credentials', cred);
 						} catch (e) {
 							logger.debug('cannot get cognito credentials', e);
@@ -1407,7 +1415,11 @@ export class InternalAuthClass {
 						logger.debug(session);
 						try {
 							await this.Credentials.clear();
-							const cred = await this.Credentials.set(session, 'session');
+							const cred = await this.Credentials.set(
+								session,
+								'session',
+								customUserAgentDetails
+							);
 							logger.debug('succeed to get cognito credentials', cred);
 						} catch (e) {
 							logger.debug('cannot get cognito credentials', e);
@@ -2257,7 +2269,10 @@ export class InternalAuthClass {
 
 		if (federatedInfo) {
 			// refresh the jwt token here if necessary
-			return this.Credentials.refreshFederatedToken(federatedInfo);
+			return this.Credentials.refreshFederatedToken(
+				federatedInfo,
+				customUserAgentDetails
+			);
 		} else {
 			return this._currentSession(
 				getAuthUserAgentDetails(
@@ -2267,11 +2282,15 @@ export class InternalAuthClass {
 			)
 				.then(session => {
 					logger.debug('getting session success', session);
-					return this.Credentials.set(session, 'session');
+					return this.Credentials.set(
+						session,
+						'session',
+						customUserAgentDetails
+					);
 				})
 				.catch(() => {
 					logger.debug('getting guest credentials');
-					return this.Credentials.set(null, 'guest');
+					return this.Credentials.set(null, 'guest', customUserAgentDetails);
 				});
 		}
 	}
@@ -2280,7 +2299,7 @@ export class InternalAuthClass {
 		customUserAgentDetails?: CustomUserAgentDetails
 	): Promise<ICredentials> {
 		logger.debug('getting current credentials');
-		return this.Credentials.get();
+		return this.Credentials.get(customUserAgentDetails);
 	}
 
 	/**
@@ -2846,7 +2865,7 @@ export class InternalAuthClass {
 
 				this._storage.setItem(
 					'aws-amplify-federatedUserAgent',
-					getAuthUserAgentValue(
+					getAuthUserAgentDetails(
 						AuthAction.FederatedSignIn,
 						customUserAgentDetails
 					)
@@ -2879,7 +2898,8 @@ export class InternalAuthClass {
 			// So we need to retrieve the user again.
 			const credentials = await this.Credentials.set(
 				{ provider, token, identity_id, user, expires_at },
-				'federation'
+				'federation',
+				customUserAgentDetails
 			);
 			const currentUser = await this._currentAuthenticatedUser();
 			dispatchAuthEvent(
@@ -2932,14 +2952,16 @@ export class InternalAuthClass {
 
 			if (hasCodeOrError || hasTokenOrError) {
 				this._storage.setItem('amplify-redirected-from-hosted-ui', 'true');
-				const userAgentValue =
+
+				const userAgentDetails: CustomUserAgentDetails =
 					this._storage.getItem('aws-amplify-federatedUserAgent') || undefined;
 				this._storage.removeItem('aws-amplify-federatedUserAgent');
+
 				try {
 					const { accessToken, idToken, refreshToken, state } =
 						await this._oAuthHandler.handleAuthResponse(
 							currentUrl,
-							userAgentValue
+							getAmplifyUserAgent(userAgentDetails)
 						);
 					const session = new CognitoUserSession({
 						IdToken: new CognitoIdToken({ IdToken: idToken }),
@@ -2954,7 +2976,11 @@ export class InternalAuthClass {
 					let credentials;
 					// Get AWS Credentials & store if Identity Pool is defined
 					if (this._config.identityPoolId) {
-						credentials = await this.Credentials.set(session, 'session');
+						credentials = await this.Credentials.set(
+							session,
+							'session',
+							userAgentDetails
+						);
 						logger.debug('AWS credentials', credentials);
 					}
 
