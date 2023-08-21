@@ -2862,13 +2862,16 @@ export class InternalAuthClass {
 				const redirect_uri = isCognitoHostedOpts(this._config.oauth)
 					? this._config.oauth.redirectSignIn
 					: this._config.oauth.redirectUri;
-
-				this._storage.setItem(
-					'aws-amplify-federatedUserAgent',
+				const userAgentDetailsJSON = JSON.stringify(
 					getAuthUserAgentDetails(
 						AuthAction.FederatedSignIn,
 						customUserAgentDetails
 					)
+				);
+
+				this._storage.setItem(
+					'aws-amplify-federatedUserAgent',
+					userAgentDetailsJSON
 				);
 
 				this._oAuthHandler.oauthSignIn(
@@ -2953,9 +2956,18 @@ export class InternalAuthClass {
 			if (hasCodeOrError || hasTokenOrError) {
 				this._storage.setItem('amplify-redirected-from-hosted-ui', 'true');
 
-				const userAgentDetails: CustomUserAgentDetails =
-					this._storage.getItem('aws-amplify-federatedUserAgent') || undefined;
-				this._storage.removeItem('aws-amplify-federatedUserAgent');
+				let userAgentDetails: CustomUserAgentDetails;
+				try {
+					userAgentDetails = JSON.parse(
+						this._storage.getItem('aws-amplify-federatedUserAgent') || undefined
+					);
+					this._storage.removeItem('aws-amplify-federatedUserAgent');
+				} catch (e) {
+					logger.debug(
+						'failed to get or parse item aws-amplify-federatedUserAgent',
+						e
+					);
+				}
 
 				try {
 					const { accessToken, idToken, refreshToken, state } =
