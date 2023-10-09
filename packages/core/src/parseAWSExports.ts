@@ -117,13 +117,15 @@ export const parseAWSExports = (
 		const { convert } = predictionsConfig || {};
 		if (convert?.speechGenerator?.defaults) {
 			// map VoiceId to voiceId in convert.speechGenerator.defaults
-			const { VoiceId: voiceId } =
+			const { VoiceId: voiceId, LanguageCode: languageCode } =
 				predictionsConfig.convert.speechGenerator.defaults;
 			convert.speechGenerator.defaults = {
 				voiceId,
+				languageCode,
 				...convert.speechGenerator.defaults,
 			};
 			delete convert.speechGenerator.defaults.VoiceId;
+			delete convert.speechGenerator.defaults.LanguageCode;
 		}
 		amplifyConfig.Predictions = predictionsConfig;
 	}
